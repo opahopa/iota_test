@@ -1,10 +1,13 @@
-from iota import Iota, TryteString
-import json
+from iota import Iota, TryteString, \
+    ProposedTransaction, Address, Tag
+from six import binary_type
 
-from config import SEED
+import sys
+
+from config import SEED, NODE_URL
 
 # Specify seed.
-api = Iota('http://iota.bitfinex.com:80', SEED)
+api = Iota(NODE_URL, SEED)
 
 
 def print_api_resp(resp):
@@ -19,9 +22,31 @@ def get_node_info():
 
 
 def generate_wallet():
-    resp = api.get_new_addresses()
-    print_api_resp(resp)
+    index = 0
+    count = 1
+
+    try:
+        resp = api.get_new_addresses(index, count)
+        print(resp)
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        raise
+    else:
+        #Walidate address by "attaching" to tangle
+        for addy in resp['addresses']:
+            # addr = binary_type(addy).decode('ascii')
+            addr = Address(addy)
+            print('addr: {} length: {} \n'.format(addr.address, len(addr.address)))
+
+            confirm_wallet_transaction = ProposedTransaction(
+                address=addr,
+                value=0,
+            )
+
+            transfer_result = api.send_transfer(depth=4, transfers=[confirm_wallet_transaction])
+            print_api_resp(transfer_result)
 
 
 if __name__ == "__main__":
-    generate_wallet()
+    # generate_wallet()
+    get_node_info()
