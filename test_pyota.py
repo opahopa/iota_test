@@ -1,5 +1,5 @@
 from iota import Iota, TryteString, \
-    ProposedTransaction, Address, Tag
+    ProposedTransaction, Address, Tag, Bundle, Transaction
 from six import binary_type
 
 import sys
@@ -46,7 +46,12 @@ def generate_wallet():
             transfer_result = api.send_transfer(depth=4, transfers=[confirm_wallet_transaction])
             print_api_resp(transfer_result)
 
+            transaction_bundle = Bundle(transfer_result)
+            for tr in transaction_bundle:
+                for key, value in tr:
+                    print('{} : {}'.format(key, value))
+
 
 if __name__ == "__main__":
-    # generate_wallet()
-    get_node_info()
+    generate_wallet()
+    # get_node_info()
